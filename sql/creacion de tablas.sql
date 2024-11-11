@@ -4,7 +4,7 @@ drop table if exists biomas cascade;
 drop table if exists elementos cascade;
 drop table if exists mg_rango cascade;
 drop table if exists mg_bioma cascade;
-drop table if exists debilidades cascade;
+drop table if exists mg_debilidades cascade;
 drop table if exists elemento_monstro cascade;
 DROP table if exists monstro_grande cascade;
 drop table if exists categoria_monstro cascade;
@@ -59,35 +59,35 @@ primary key (id_elemento)
 );
 
 create table mg_rango(
-id serial unique primary key,
 id_rango int,
+id_monstro int,
+primary key (id_rango, id_monstro),
 FOREIGN key (id_rango) 
 	REFERENCES rangos(id_rango)
 		on delete cascade 
 		on update cascade,
-id_monstro int,
 FOREIGN key (id_monstro) references monstro_grande(id_monstroG)
 	on delete cascade 
 	on update cascade
 );
 
 create table mg_bioma(
-id serial unique primary key,
 id_bioma int,
+id_monstro int,
+PRIMARY KEY(id_bioma, id_monstro),
 FOREIGN key (id_bioma) REFERENCES biomas(id_bioma)
 	on delete cascade
 	on update cascade,
-id_monstro int,
 FOREIGN key (id_monstro) references monstro_grande(id_monstroG)
 	on delete cascade
 	on update cascade
 );
 
-create table debilidades (
-id serial unique primary key,
+create table mg_debilidades (
 id_elemento int,
 id_monstro int,
 eficacia float,
+PRIMARY KEY (id_elemento, id_monstro),
 FOREIGN key (id_elemento) REFERENCES elementos(id_elemento)
 	on delete cascade 
 	on update cascade,
@@ -97,9 +97,9 @@ foreign key (id_monstro) REFERENCES monstro_grande(id_monstroG)
 );
 
 create table elemento_monstro(
-id serial unique primary key,
 id_elemento int,
 id_monstro int,
+PRIMARY key (id_elemento, id_monstro),
 FOREIGN key (id_elemento) REFERENCES elementos(id_elemento)
 	on delete cascade
 	on update cascade,
@@ -159,7 +159,7 @@ insert into mg_bioma (id_bioma,id_monstro) values
 (2, 1),
 (1, 2);
 
-insert into debilidades(id_elemento, id_monstro, eficacia) values
+insert into mg_debilidades(id_elemento, id_monstro, eficacia) values
 (3,1,3.00),
 (1,1,2.00),
 (4,1,2.00),
@@ -187,4 +187,15 @@ insert into items (nombre_item,descripcion_item,id_monstro) values
 ('itemEjemplo', 'descripcionItem', 2);
 
 
+CREATE OR REPLACE VIEW v_mostro_grande as 
+select 
+	id_monstrog,
+	nombre,
+	vida,
+	tipo
+from
+	monstro_grande
+inner join categoria_monstro on monstro_grande.id_categoria = categoria_monstro.id_tipo_monstro;
 
+
+select * from v_mostro_grande;
