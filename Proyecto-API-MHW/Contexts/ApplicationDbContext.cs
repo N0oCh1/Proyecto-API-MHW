@@ -9,7 +9,7 @@ namespace Proyecto_API_MHW.Contexts
         public DbSet<MonstroGrandes> MonstroGrandes { get; set; }
         public DbSet<vMonstroGrandes> vMonstroGrandes {get; set; }
         public DbSet<Categoria> Categorias { get; set; }
-
+        //asc
 
     }
 }
