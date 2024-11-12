@@ -34,6 +34,7 @@ create table items (
  nombre_item VARCHAR(50),
  descripcion_item VARCHAR(255),
  PRIMARY KEY (id_item),
+ CONSTRAINT fk_items
  	FOREIGN KEY (id_monstro) 
  		REFERENCES monstro_grande(id_monstroG)
 		 on delete cascade
@@ -62,10 +63,12 @@ create table mg_rango(
 id_rango int,
 id_monstro int,
 primary key (id_rango, id_monstro),
+CONSTRAINT fk_idRango
 FOREIGN key (id_rango) 
 	REFERENCES rangos(id_rango)
 		on delete cascade 
 		on update cascade,
+CONSTRAINT fk_idMonstro
 FOREIGN key (id_monstro) references monstro_grande(id_monstroG)
 	on delete cascade 
 	on update cascade
@@ -75,9 +78,11 @@ create table mg_bioma(
 id_bioma int,
 id_monstro int,
 PRIMARY KEY(id_bioma, id_monstro),
+CONSTRAINT fk_idBioma
 FOREIGN key (id_bioma) REFERENCES biomas(id_bioma)
 	on delete cascade
 	on update cascade,
+Constraint fk_idMonstro
 FOREIGN key (id_monstro) references monstro_grande(id_monstroG)
 	on delete cascade
 	on update cascade
@@ -88,9 +93,11 @@ id_elemento int,
 id_monstro int,
 eficacia float,
 PRIMARY KEY (id_elemento, id_monstro),
+Constraint fk_idMElemento
 FOREIGN key (id_elemento) REFERENCES elementos(id_elemento)
 	on delete cascade 
 	on update cascade,
+Constraint fk_idMonstro
 foreign key (id_monstro) REFERENCES monstro_grande(id_monstroG)
 	on delete cascade
 	on update cascade
@@ -100,9 +107,11 @@ create table elemento_monstro(
 id_elemento int,
 id_monstro int,
 PRIMARY key (id_elemento, id_monstro),
+Constraint fk_idElemento
 FOREIGN key (id_elemento) REFERENCES elementos(id_elemento)
 	on delete cascade
 	on update cascade,
+Constraint fk_idMonstro
 foreign key (id_monstro) REFERENCES monstro_grande(id_monstroG)
 	on delete cascade
 	on update cascade
@@ -187,7 +196,7 @@ insert into items (nombre_item,descripcion_item,id_monstro) values
 ('itemEjemplo', 'descripcionItem', 2);
 
 
-CREATE OR REPLACE VIEW v_mostro_grande as 
+CREATE OR REPLACE VIEW v_monstro_grande as 
 select 
 	id_monstrog,
 	nombre,

@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Proyecto_API_MHW.Models
 {
-    [Table("categoria_monstro")]
-    public class Categoria
+    [Table("elementos")]
+    public class Elemento
     {
         [Key]
-        public int id_tipo_monstro { get; set; }
-        public string tipo { get; set; }
+        public int id_elemento {  get; set; }
+        public string elemento { get; set; }    
     }
 }
