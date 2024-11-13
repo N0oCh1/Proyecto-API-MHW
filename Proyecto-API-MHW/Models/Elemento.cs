@@ -1,13 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 
-namespace Proyecto_API_MHW.Models
+namespace Proyecto_API_MHW.Models;
+
+public partial class Elemento
 {
-    [Table("elementos")]
-    public class Elemento
-    {
-        [Key]
-        public int id_elemento {  get; set; }
-        public string elemento { get; set; }    
-    }
+    public int IdElemento { get; set; }
+
+    public string? Elemento1 { get; set; }
+
+    public virtual ICollection<MgDebilidade> MgDebilidades { get; set; } = new List<MgDebilidade>();
+
+    public virtual ICollection<MonstroGrande> IdMonstros { get; set; } = new List<MonstroGrande>();
 }
