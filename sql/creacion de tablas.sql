@@ -8,6 +8,7 @@ drop table if exists mg_debilidades cascade;
 drop table if exists elemento_monstro cascade;
 DROP table if exists monstro_grande cascade;
 drop table if exists categoria_monstro cascade;
+drop table if exists imagen_monstro cascade;
 
 
 create TABLE categoria_monstro (
@@ -16,16 +17,29 @@ create TABLE categoria_monstro (
  PRIMARY KEY(id_tipo_monstro)
 );
 
+create table imagen_monstro (
+ id_imagen serial unique,
+ primary key (id_imagen),
+ icon_url varchar(100),
+ image_url varchar(100)
+);
+
 create table monstro_grande(
 id_monstroG serial UNIQUE,
 nombre varchar(20),
 vida int,
+id_imagen int,
 id_categoria int,
+Primary key (id_monstroG),
 CONSTRAINT fk_categoria 
 	FOREIGN KEY (id_categoria) 
 		REFERENCES categoria_monstro(id_tipo_monstro)
 		on delete cascade
-		on update cascade 
+		on update cascade,
+Constraint fk_imagen FOREIGN key (id_imagen)
+	REFERENCES imagen_monstro(id_imagen)
+	on delete cascade
+	on update cascade
 );
 
 create table items (
@@ -127,6 +141,10 @@ insert into categoria_monstro (tipo) values
 ('Dragon anciano'),
 ('Wyvern pajaro');
 
+insert into imagen_monstro (icon_url, image_url) values
+('./iconsample1', './imagesample'),
+('./iconsample1', './imagesample');
+
 insert into biomas (nombre_bioma) values 
 ('Bosque primigenio'),
 ('Yermo de agujas'),
@@ -151,9 +169,9 @@ insert into rangos(rango) values
 
 --insercion de datos de prueba
 
-insert into monstro_grande (nombre, vida, id_categoria) values 
-('Pukei-Pukei', 3481, 8),
-('Tobi-Hadachi', 2552, 5);
+insert into monstro_grande (nombre, vida, id_imagen ,id_categoria) values 
+('Pukei-Pukei', 3481,1,8),
+('Tobi-Hadachi', 2552,2,5);
 
 insert into mg_rango (id_rango, id_monstro) values 
 (1, 2),
@@ -205,6 +223,3 @@ select
 from
 	monstro_grande
 inner join categoria_monstro on monstro_grande.id_categoria = categoria_monstro.id_tipo_monstro;
-
-
-select * from v_mostro_grande;
