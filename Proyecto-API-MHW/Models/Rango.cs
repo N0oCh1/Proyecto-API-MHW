@@ -1,13 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 
-namespace Proyecto_API_MHW.Models
+namespace Proyecto_API_MHW.Models;
+
+public partial class Rango
 {
-    [Table("rangos")]
-    public class Rango
-    {
-        [Key]
-        public int id_rango { get; set; }
-        public string rango { get; set; }
-    }
+    public int IdRango { get; set; }
+
+    public string? Rango1 { get; set; }
+
+    public virtual ICollection<MonstroGrande> IdMonstros { get; set; } = new List<MonstroGrande>();
 }

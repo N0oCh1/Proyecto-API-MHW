@@ -1,15 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 
-namespace Proyecto_API_MHW.Models
+namespace Proyecto_API_MHW.Models;
+
+public partial class Bioma
 {
+    public int IdBioma { get; set; }
 
-    [Table("biomas")]
-    public class Bioma
-    {
-        [Key]
-        public  int id_bioma { get; set; }
-        public string nombre_bioma { get; set; }
+    public string? NombreBioma { get; set; }
 
-    }
+    public virtual ICollection<MonstroGrande> IdMonstros { get; set; } = new List<MonstroGrande>();
 }
