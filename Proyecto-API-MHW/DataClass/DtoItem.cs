@@ -1,6 +1,6 @@
 ﻿namespace Proyecto_API_MHW.DataClass
 {
-    public class DtaItem
+    public class DtoItem
     {
         public int id {  get; set; }
         public string name { get; set; }
