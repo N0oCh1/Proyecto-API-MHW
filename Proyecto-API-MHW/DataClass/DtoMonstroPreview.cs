@@ -4,7 +4,7 @@
     {
         public int idMonstro { get; set; }
         public string name { get; set; }
-        public string iconImage { get; set; }
+        public List<DtoImagen> image { get; set; }
         public string url { get; set; }
     }
 }

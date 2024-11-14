@@ -7,17 +7,15 @@ public partial class MonstroGrande
 {
     public int IdMonstrog { get; set; }
 
-    public string? Nombre { get; set; }
+    public string Nombre { get; set; }
 
-    public int? Vida { get; set; }
+    public int Vida { get; set; }
 
-    public int? IdImagen { get; set; }
-
-    public int? IdCategoria { get; set; }
+    public int IdCategoria { get; set; }
 
     public virtual CategoriaMonstro? IdCategoriaNavigation { get; set; }
 
-    public virtual ImagenMonstro? IdImagenNavigation { get; set; }
+    public virtual ICollection<ImagenMonstro> ImagenMonstros { get; set; } = new List<ImagenMonstro>();
 
     public virtual ICollection<Item> Items { get; set; } = new List<Item>();
 

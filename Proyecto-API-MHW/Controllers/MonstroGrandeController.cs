@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto_API_MHW.Contexts;
 using Proyecto_API_MHW.DataClass;
+using Proyecto_API_MHW.Models;
 
 namespace Proyecto_API_MHW.Controllers
 {
@@ -28,7 +29,7 @@ namespace Proyecto_API_MHW.Controllers
                 .Include(m => m.IdCategoriaNavigation)
                 .Include(m => m.IdBiomas)
                 .Include(m => m.IdElementos)
-                .Include(m => m.IdImagenNavigation)
+                .Include(m => m.ImagenMonstros)
                 .Include(m => m.IdRangos)
                 .Include(m => m.Items)
                 .Include(m => m.MgDebilidades)
@@ -37,16 +38,28 @@ namespace Proyecto_API_MHW.Controllers
                     new DtomonstroGrande()
                     {
                         id = monstro.IdMonstrog,
-                        name = monstro.Nombre ?? string.Empty,
-                        health = monstro.Vida ?? int.MinValue,
-                        monsterClass = monstro.IdCategoriaNavigation.Tipo,
-                        image = new DtoImagen()
+                        name = monstro.Nombre,
+                        health = monstro.Vida,
+                        monsterClass = new DtoCategoria() 
                         {
-                            imageUrl = monstro.IdImagenNavigation.ImageUrl,
-                            iconUrl = monstro.IdImagenNavigation.IconUrl
+                            id_categoria = monstro.IdCategoria,
+                            categoria = monstro.IdCategoriaNavigation.Tipo
                         },
-                        location = monstro.IdBiomas.Select(b => b.NombreBioma).ToList(),
-                        range = monstro.IdRangos.Select(r => r.Rango1).ToList(),
+                        image = monstro.ImagenMonstros.Select(i=>new DtoImagen()
+                        {
+                            imageUrl = i.ImageUrl,
+                            iconUrl = i.IconUrl
+                        }).ToList(),
+                        location = monstro.IdBiomas.Select(b => new DtoBioma()
+                        {
+                            id_bioma = b.IdBioma,
+                            bioma = b.NombreBioma
+                        }).ToList(),
+                        range = monstro.IdRangos.Select(r => new DtoRango()
+                        {
+                            id_rango = r.IdRango,
+                            rango = r.Rango1
+                        }).ToList(),
                         elements = monstro.IdElementos.Select(e => new DtoElemento()
                         {
                             id_elemento = e.IdElemento,
@@ -54,7 +67,7 @@ namespace Proyecto_API_MHW.Controllers
                         }).ToList(),
                         weekness = monstro.MgDebilidades.Select(d => new DtoDebilidad()
                         {
-                            id_elemento = d.IdElemento,
+                            id_elemento = d.IdElemento, 
                             elemento = d.IdElementoNavigation.Elemento1,
                             eficacia = (double)d.Eficacia,
                         }).ToList(),
@@ -78,17 +91,52 @@ namespace Proyecto_API_MHW.Controllers
         {
             return Ok(await MhwApi.MonstroGrandes
                 .AsSplitQuery()
-                .Include(m => m.IdImagenNavigation)
+                .Include(m => m.ImagenMonstros)
                 .Select(monstro => new DtoMonstroPreview
                 {
                     idMonstro = monstro.IdMonstrog,
                     name = monstro.Nombre,
-                    iconImage = monstro.IdImagenNavigation.IconUrl,
+                    image = monstro.ImagenMonstros.Select(i => new DtoImagen()
+                    {
+                        imageUrl = i.ImageUrl,
+                        iconUrl = i.IconUrl
+                    }).ToList(),
                     url = $"https://localhost:7101/monstro/get/{monstro.IdMonstrog}" 
                 })
                 .AsNoTracking()
                 .ToListAsync()
                 );
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<MonstroGrande>> CrearMonstro (DtomonstroGrande data) 
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            MhwApi.MonstroGrandes.Add(new MonstroGrande()
+            {
+                Nombre = data.name,
+                Vida = data.health,
+                IdCategoria = data.monsterClass.id_categoria,
+                ImagenMonstros = data.image.Select(i => new ImagenMonstro() 
+                {
+                    IconUrl = i.iconUrl,
+                    ImageUrl = i.imageUrl
+                }).ToList(),
+                IdBiomas = data.location.Select(l=>new Bioma()
+                {
+                    IdBioma = l.id_bioma,
+                    NombreBioma = l.bioma
+                }).ToList(),
+            });
+            await MhwApi.SaveChangesAsync();
+            MonstroGrande mg = MhwApi.MonstroGrandes.OrderBy(id => id.IdMonstrog).LastOrDefault();
+            int mgPk = mg.IdMonstrog;
+            
+            Console.WriteLine(mgPk.ToString() );
+            return CreatedAtAction(nameof(CrearMonstro), new { id = data.id}, data);
         }
     }
 }
