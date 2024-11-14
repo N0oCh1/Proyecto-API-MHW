@@ -9,7 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Proyecto_API_MHW.Controllers
 {
     [ApiController]
-    [Route("api/mg")]
+    [Route("monstro")]
     public class MonstroGrandeController : ControllerBase
     {
         private readonly ApplicationDbContext applicationDbContext;
@@ -22,8 +22,8 @@ namespace Proyecto_API_MHW.Controllers
         //{
         //    return await applicationDbContext.MonstroGrandes.Include(e=> e.categorias).ToListAsync();   
         //}
-        [HttpGet("get")]
-        public async Task<ActionResult<List<DtamonstroGrande>>> GetMonstroGrandes()
+        [HttpGet("{id}")]
+        public async Task<ActionResult<List<DtamonstroGrande>>> GetMonstroGrandes(int id)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace Proyecto_API_MHW.Controllers
                 List<Rango> rangos = await applicationDbContext.rangos.ToListAsync();
                 List<MgRango> mgRangos = await applicationDbContext.mgRangos.ToListAsync();
 
-
+                
                 GetDataMG Getdata = new GetDataMG(
                     mg,
                     categoria,
