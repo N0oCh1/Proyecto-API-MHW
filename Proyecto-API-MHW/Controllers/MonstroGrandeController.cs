@@ -19,7 +19,30 @@ namespace Proyecto_API_MHW.Controllers
         {
             this.MhwApi = context;
         }
-
+    // URL para obtener una prevista de los mosntros
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<DtoMonstroPreview>>> GetPreview()
+        {
+            return Ok(await MhwApi.MonstroGrandes
+                .AsSplitQuery()
+                .Include(m => m.ImagenMonstros)
+                .Select(monstro => new DtoMonstroPreview
+                {
+                    idMonstro = monstro.IdMonstrog,
+                    nombre = monstro.Nombre,
+                    imagen = monstro.ImagenMonstros.Select(i => new DtoImagen()
+                    {
+                        imageUrl = i.ImageUrl,
+                        iconUrl = i.IconUrl
+                    }).ToList(),
+                    detalle = $"https://localhost:7101/monstro/{monstro.IdMonstrog}"
+                })
+                .AsNoTracking()
+                .ToListAsync()
+                );
+        }
+    // URL del detalle de los cada monstros
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<List<DtomonstroGrande>>> GetMonstro(int id)
@@ -38,35 +61,35 @@ namespace Proyecto_API_MHW.Controllers
                 .Select(monstro =>
                     new DtomonstroGrande()
                     {
-                        id = monstro.IdMonstrog,
-                        name = monstro.Nombre,
-                        health = monstro.Vida,
-                        monsterClass = new DtoCategoria() 
+                        idMonstro = monstro.IdMonstrog,
+                        nombre = monstro.Nombre,
+                        vida = monstro.Vida,
+                        tipo = new DtoCategoria() 
                         {
                             id_categoria = monstro.IdCategoria,
                             categoria = monstro.IdCategoriaNavigation.Tipo
                         },
-                        image = monstro.ImagenMonstros.Select(i=>new DtoImagen()
+                        imagen = monstro.ImagenMonstros.Select(i=>new DtoImagen()
                         {
                             imageUrl = i.ImageUrl,
                             iconUrl = i.IconUrl
                         }).ToList(),
-                        location = monstro.IdBiomas.Select(b => new DtoBioma()
+                        biomas = monstro.IdBiomas.Select(b => new DtoBioma()
                         {
                             id_bioma = b.IdBioma,
                             bioma = b.NombreBioma
                         }).ToList(),
-                        range = monstro.IdRangos.Select(r => new DtoRango()
+                        rangos = monstro.IdRangos.Select(r => new DtoRango()
                         {
                             id_rango = r.IdRango,
                             rango = r.Rango1
                         }).ToList(),
-                        elements = monstro.IdElementos.Select(e => new DtoElemento()
+                        elementos = monstro.IdElementos.Select(e => new DtoElemento()
                         {
                             id_elemento = e.IdElemento,
                             elemento = e.Elemento1
                         }).ToList(),
-                        weekness = monstro.MgDebilidades.Select(d => new DtoDebilidad()
+                        debilidad = monstro.MgDebilidades.Select(d => new DtoDebilidad()
                         {
                             id_elemento = d.IdElemento, 
                             elemento = d.IdElementoNavigation.Elemento1,
@@ -83,36 +106,10 @@ namespace Proyecto_API_MHW.Controllers
                 )
                 .AsNoTracking()
                 .ToListAsync();
-            return Ok(response.Find(x => x.id == id));
+            return Ok(response.Find(x => x.idMonstro == id));
         }
 
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<DtoMonstroPreview>>> GetPreview()
-        {
-            return Ok(await MhwApi.MonstroGrandes
-                .AsSplitQuery()
-                .Include(m => m.ImagenMonstros)
-                .Select(monstro => new DtoMonstroPreview
-                {
-                    idMonstro = monstro.IdMonstrog,
-                    name = monstro.Nombre,
-                    image = monstro.ImagenMonstros.Select(i => new DtoImagen()
-                    {
-                        imageUrl = i.ImageUrl,
-                        iconUrl = i.IconUrl
-                    }).ToList(),
-                    url = $"https://localhost:7101/monstro/get/{monstro.IdMonstrog}" 
-                })
-                .AsNoTracking()
-                .ToListAsync()
-                );
-        }
-        [HttpGet("test")]
-        public async Task<ActionResult<List<Bioma>>> getbioma()
-        {
-            return Ok(await MhwApi.Biomas.ToListAsync());
-        }
+     // URL para incresar nuevos monstros
         [HttpPost]
         public async Task<ActionResult<MonstroGrande>> CrearMonstro (DtomonstroGrande data) 
         {
@@ -121,41 +118,63 @@ namespace Proyecto_API_MHW.Controllers
             {
                 return BadRequest(ModelState);
             }
-            MonstroGrande insertMG = new MonstroGrande()
+
+            MonstroGrande nuevoMonstro = new MonstroGrande()
             {
-                Nombre = data.name,
-                Vida = data.health,
-                IdCategoria = data.monsterClass.id_categoria ?? int.MinValue,
-                ImagenMonstros = data.image.Select(i => new ImagenMonstro()
+                Nombre = data.nombre,
+                Vida = data.vida,
+                IdCategoria = data.tipo.id_categoria ?? int.MinValue,
+                ImagenMonstros = data.imagen.Select(i => new ImagenMonstro()
                 {
                     IconUrl = i.iconUrl,
                     ImageUrl = i.imageUrl
                 }).ToList(),
             };
-            MhwApi.MonstroGrandes.Add(insertMG);
-            int MGid = MhwApi.MonstroGrandes.OrderBy(id => id.IdMonstrog).LastOrDefault().IdMonstrog;
-            
-            data.items.Select(item => MhwApi.Items.Add(new Item()
-            {
-                IdMonstro = MGid,
-                NombreItem = item.name,
-                DescripcionItem = item.description
-            }));
-
-            data.location.Select( l => MhwApi.Biomas.Add(new Bioma()
-            {
-                NombreBioma = l.bioma,
-                IdMonstros = insertMG
-            }));
-
-
-
-
-
-
+            MhwApi.MonstroGrandes.Add(nuevoMonstro);
 
             await MhwApi.SaveChangesAsync();
-            return CreatedAtAction(nameof(CrearMonstro), new { id = data.id}, data);
+            int mgID = MhwApi.MonstroGrandes.OrderBy(id=>id.IdMonstrog).LastOrDefault().IdMonstrog;
+
+
+            MonstroGrande monstro = MhwApi.MonstroGrandes.Find(mgID);
+            data.items.ForEach(item =>
+            {
+                monstro.Items.Add(new Item()
+                {
+                    IdMonstro = mgID,
+                    NombreItem = item.name,
+                    DescripcionItem = item.description
+                });
+            });
+
+            data.rangos.ForEach(r =>
+            {
+                monstro.IdRangos.Add(MhwApi.Rangos.Find(r.id_rango));
+            });
+
+            data.debilidad.ForEach(w =>
+            {
+                monstro.MgDebilidades.Add(new MgDebilidade()
+                {
+                    IdElementoNavigation = MhwApi.Elementos.Find(w.id_elemento),
+                    IdMonstroNavigation = MhwApi.MonstroGrandes.Find(mgID),
+                    Eficacia = w.eficacia
+                });
+            });
+
+            data.elementos.ForEach(e =>
+            {
+                monstro.IdElementos.Add(MhwApi.Elementos.Find(e.id_elemento));
+            });
+
+            data.biomas.ForEach(b =>
+            {
+                monstro.IdBiomas.Add(MhwApi.Biomas.Find(b.id_bioma));
+            });
+
+            
+            await MhwApi.SaveChangesAsync();
+            return CreatedAtAction(nameof(CrearMonstro), new { id = data.idMonstro}, data);
         }
     }
 }
