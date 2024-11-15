@@ -3,8 +3,8 @@
     public class DtoMonstroPreview
     {
         public int idMonstro { get; set; }
-        public string name { get; set; }
-        public List<DtoImagen> image { get; set; }
-        public string url { get; set; }
+        public string nombre { get; set; }
+        public List<DtoImagen> imagen { get; set; }
+        public string detalle { get; set; }
     }
 }
