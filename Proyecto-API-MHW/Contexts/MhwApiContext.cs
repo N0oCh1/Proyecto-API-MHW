@@ -37,17 +37,14 @@ public partial class MhwApiContext : DbContext
     public virtual DbSet<Rango> Rangos { get; set; }
 
     public virtual DbSet<VMonstroGrande> VMonstroGrandes { get; set; }
-    public virtual DbSet<MgBioma> MgBiomas { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseNpgsql("Name=ConnectionStrings:DefaultConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<MgBioma>(e =>
-        {
-            e.HasKey(e => new { e.id_bioma, e.id_monstro });
-        });
+
 
         modelBuilder.Entity<Bioma>(entity =>
         {
