@@ -2,7 +2,7 @@
 {
     public class DtoRango
     {
-        public int id_rango { set; get; }  
-        public string rango { set; get; }   
+        public int? id_rango { set; get; }  
+        public string? rango { set; get; }   
     }
 }

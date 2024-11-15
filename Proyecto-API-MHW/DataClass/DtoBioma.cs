@@ -2,7 +2,7 @@
 {
     public class DtoBioma
     {
-        public int id_bioma {  get; set; } 
-        public string bioma { get; set; }
+        public int? id_bioma {  get; set; } 
+        public string? bioma { get; set; }
     }
 }

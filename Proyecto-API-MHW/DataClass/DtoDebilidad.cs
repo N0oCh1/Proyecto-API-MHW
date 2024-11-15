@@ -2,8 +2,8 @@
 {
     public class DtoDebilidad
     {
-        public int id_elemento {  get; set; }
-        public string elemento { get; set; }
-        public double eficacia { get; set; }
+        public int? id_elemento {  get; set; }
+        public string? elemento { get; set; }
+        public double? eficacia { get; set; }
     }
 }

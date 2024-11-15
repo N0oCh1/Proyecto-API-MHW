@@ -2,7 +2,7 @@
 {
     public class DtoElemento
     {
-        public int id_elemento { get; set; }
-        public string elemento { get; set; }
+        public int? id_elemento { get; set; }
+        public string? elemento { get; set; }
     }
 }

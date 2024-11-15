@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Proyecto_API_MHW.Contexts;
 using Proyecto_API_MHW.DataClass;
 using Proyecto_API_MHW.Models;
+using System.Linq;
 
 namespace Proyecto_API_MHW.Controllers
 {
@@ -107,35 +108,53 @@ namespace Proyecto_API_MHW.Controllers
                 .ToListAsync()
                 );
         }
-
+        [HttpGet("test")]
+        public async Task<ActionResult<List<Bioma>>> getbioma()
+        {
+            return Ok(await MhwApi.Biomas.ToListAsync());
+        }
         [HttpPost]
         public async Task<ActionResult<MonstroGrande>> CrearMonstro (DtomonstroGrande data) 
         {
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            MhwApi.MonstroGrandes.Add(new MonstroGrande()
+            MonstroGrande insertMG = new MonstroGrande()
             {
                 Nombre = data.name,
                 Vida = data.health,
-                IdCategoria = data.monsterClass.id_categoria,
-                ImagenMonstros = data.image.Select(i => new ImagenMonstro() 
+                IdCategoria = data.monsterClass.id_categoria ?? int.MinValue,
+                ImagenMonstros = data.image.Select(i => new ImagenMonstro()
                 {
                     IconUrl = i.iconUrl,
                     ImageUrl = i.imageUrl
                 }).ToList(),
-                IdBiomas = data.location.Select(l=>new Bioma()
-                {
-                    IdBioma = l.id_bioma,
-                    NombreBioma = l.bioma
-                }).ToList(),
-            });
-            await MhwApi.SaveChangesAsync();
-            MonstroGrande mg = MhwApi.MonstroGrandes.OrderBy(id => id.IdMonstrog).LastOrDefault();
-            int mgPk = mg.IdMonstrog;
+            };
+            MhwApi.MonstroGrandes.Add(insertMG);
+            int MGid = MhwApi.MonstroGrandes.OrderBy(id => id.IdMonstrog).LastOrDefault().IdMonstrog;
             
-            Console.WriteLine(mgPk.ToString() );
+            data.items.Select(item => MhwApi.Items.Add(new Item()
+            {
+                IdMonstro = MGid,
+                NombreItem = item.name,
+                DescripcionItem = item.description
+            }));
+
+            data.location.Select( l => MhwApi.Biomas.Add(new Bioma()
+            {
+                NombreBioma = l.bioma,
+                IdMonstros = insertMG
+            }));
+
+
+
+
+
+
+
+            await MhwApi.SaveChangesAsync();
             return CreatedAtAction(nameof(CrearMonstro), new { id = data.id}, data);
         }
     }

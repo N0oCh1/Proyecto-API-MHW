@@ -2,7 +2,7 @@
 {
     public class DtoImagen
     {
-        public string imageUrl { get; set; }
-        public string iconUrl { get; set; }
+        public string? imageUrl { get; set; }
+        public string? iconUrl { get; set; }
     }
 }
