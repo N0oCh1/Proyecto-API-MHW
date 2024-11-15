@@ -113,12 +113,29 @@ namespace Proyecto_API_MHW.Controllers
         [HttpPost]
         public async Task<ActionResult<MonstroGrande>> CrearMonstro (DtomonstroGrande data) 
         {
-
+        bool monstroIsExist = false;
+        int idMonstroExistente = 0;
+        // valido si ya existe un monstro con el mismo nombre
+            await MhwApi.MonstroGrandes.ForEachAsync(monstro =>
+            {
+                if (monstro.Nombre == data.nombre)
+                {
+                    monstroIsExist = true;
+                    idMonstroExistente = monstro.IdMonstrog;
+                }
+            });
+        // validar si el modelo es valido
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            if (monstroIsExist)
+            {
+                return StatusCode(409, $"El monstro ya existe id: {idMonstroExistente}");
+            }
+
+        // creo el nuevo mosntro para poder insertar en la base de datos 
             MonstroGrande nuevoMonstro = new MonstroGrande()
             {
                 Nombre = data.nombre,
@@ -131,50 +148,48 @@ namespace Proyecto_API_MHW.Controllers
                 }).ToList(),
             };
             MhwApi.MonstroGrandes.Add(nuevoMonstro);
-
+        // guardo el nuevo mosntro para obtener la ID del mosntro creado
+                
             await MhwApi.SaveChangesAsync();
-            int mgID = MhwApi.MonstroGrandes.OrderBy(id=>id.IdMonstrog).LastOrDefault().IdMonstrog;
-
-
-            MonstroGrande monstro = MhwApi.MonstroGrandes.Find(mgID);
+            int mgID = nuevoMonstro.IdMonstrog;
+        // inserto los items para el monstro
             data.items.ForEach(item =>
             {
-                monstro.Items.Add(new Item()
+                nuevoMonstro.Items.Add(new Item()
                 {
                     IdMonstro = mgID,
                     NombreItem = item.name,
                     DescripcionItem = item.description
                 });
             });
-
+        // inserto el rango del mosntro
             data.rangos.ForEach(r =>
             {
-                monstro.IdRangos.Add(MhwApi.Rangos.Find(r.id_rango));
+                nuevoMonstro.IdRangos.Add(MhwApi.Rangos.Find(r.id_rango));
             });
-
+        // inserto las debilidades del monstro
             data.debilidad.ForEach(w =>
             {
-                monstro.MgDebilidades.Add(new MgDebilidade()
+                nuevoMonstro.MgDebilidades.Add(new MgDebilidade()
                 {
                     IdElementoNavigation = MhwApi.Elementos.Find(w.id_elemento),
                     IdMonstroNavigation = MhwApi.MonstroGrandes.Find(mgID),
                     Eficacia = w.eficacia
                 });
             });
-
+        // inserto los elementos del monstro
             data.elementos.ForEach(e =>
             {
-                monstro.IdElementos.Add(MhwApi.Elementos.Find(e.id_elemento));
+                nuevoMonstro.IdElementos.Add(MhwApi.Elementos.Find(e.id_elemento));
             });
-
+        // inserto el bioma al que pertenece el mosntro
             data.biomas.ForEach(b =>
             {
-                monstro.IdBiomas.Add(MhwApi.Biomas.Find(b.id_bioma));
+                nuevoMonstro.IdBiomas.Add(MhwApi.Biomas.Find(b.id_bioma));
             });
-
-            
+        // guardo los datos insertado para ese mosntro
             await MhwApi.SaveChangesAsync();
-            return CreatedAtAction(nameof(CrearMonstro), new { id = data.idMonstro}, data);
+            return CreatedAtAction(nameof(CrearMonstro), new { id = nuevoMonstro.IdMonstrog }, nuevoMonstro);
         }
     }
 }
