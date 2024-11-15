@@ -7,9 +7,11 @@ public partial class ImagenMonstro
 {
     public int IdImagen { get; set; }
 
+    public int? IdMonstro { get; set; }
+
     public string? IconUrl { get; set; }
 
     public string? ImageUrl { get; set; }
 
-    public virtual ICollection<MonstroGrande> MonstroGrandes { get; set; } = new List<MonstroGrande>();
+    public virtual MonstroGrande? IdMonstroNavigation { get; set; }
 }

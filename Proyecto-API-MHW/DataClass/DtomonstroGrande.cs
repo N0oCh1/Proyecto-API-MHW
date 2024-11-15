@@ -4,15 +4,15 @@ namespace Proyecto_API_MHW.DataClass
 {
     public class DtomonstroGrande
     {
-        public int id { get; set; }
-        public string name { get; set; }
-        public int health { get; set; }
-        public string monsterClass { get; set; }
-        public DtoImagen image { get;set; }
-        public List<string> location { get; set; }
-        public List<string> range { get; set; }
-        public List<DtoElemento> elements { get; set; }
-        public List<DtoDebilidad> weekness { get; set; }
+        public int idMonstro { get; set; }
+        public string nombre { get; set; }
+        public int vida { get; set; }
+        public DtoCategoria tipo { get; set; }
+        public List<DtoImagen> imagen { get;set; }
+        public List<DtoBioma> biomas { get; set; }
+        public List<DtoRango> rangos { get; set; }
+        public List<DtoElemento> elementos { get; set; }
+        public List<DtoDebilidad> debilidad { get; set; }
         public List<DtoItem> items { get; set; }
     }
 }
