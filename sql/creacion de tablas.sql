@@ -20,8 +20,8 @@ create TABLE categoria_monstro (
 create table imagen_monstro (
  id_imagen serial unique,
  primary key (id_imagen),
- icon_url varchar(100),
- image_url varchar(100)
+ icon_url text,
+ image_url text
 );
 
 create table monstro_grande(
@@ -142,8 +142,13 @@ insert into categoria_monstro (tipo) values
 ('Wyvern pajaro');
 
 insert into imagen_monstro (icon_url, image_url) values
-('./iconsample1', './imagesample'),
-('./iconsample1', './imagesample');
+(
+'https://static.wikia.nocookie.net/monsterhunterespanol/images/4/42/MHW-Icono_Pukei-Pukei.png/revision/latest/scale-to-width-down/80?cb=20210823122942&path-prefix=es',
+'https://static.wikia.nocookie.net/monsterhunterespanol/images/b/bf/MHW-Render_Pukei-Pukei.png/revision/latest/scale-to-width-down/1000?cb=20171119121532&path-prefix=es'
+),
+(
+'https://static.wikia.nocookie.net/monsterhunterespanol/images/3/30/MHW-Icono_Tobi-Kadachi.png/revision/latest?cb=20210823124001&path-prefix=es', 
+'https://static.wikia.nocookie.net/monsterhunterespanol/images/4/43/MHRise-Render_Tobi-Kadachi.png/revision/latest?cb=20210325182434&path-prefix=es');
 
 insert into biomas (nombre_bioma) values 
 ('Bosque primigenio'),
