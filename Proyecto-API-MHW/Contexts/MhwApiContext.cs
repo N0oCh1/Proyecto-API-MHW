@@ -133,10 +133,10 @@ public partial class MhwApiContext : DbContext
 
             entity.Property(e => e.IdImagen).HasColumnName("id_imagen");
             entity.Property(e => e.IconUrl)
-                .HasMaxLength(100)
+                .HasMaxLength(500)
                 .HasColumnName("icon_url");
             entity.Property(e => e.ImageUrl)
-                .HasMaxLength(100)
+                .HasMaxLength(500)
                 .HasColumnName("image_url");
         });
 
