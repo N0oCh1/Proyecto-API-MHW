@@ -38,14 +38,11 @@ public partial class MhwApiContext : DbContext
 
     public virtual DbSet<VMonstroGrande> VMonstroGrandes { get; set; }
 
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseNpgsql("Name=ConnectionStrings:DefaultConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-
-
         modelBuilder.Entity<Bioma>(entity =>
         {
             entity.HasKey(e => e.IdBioma).HasName("biomas_pkey");
@@ -138,15 +135,9 @@ public partial class MhwApiContext : DbContext
             entity.Property(e => e.IconUrl)
                 .HasMaxLength(100)
                 .HasColumnName("icon_url");
-            entity.Property(e => e.IdMonstro).HasColumnName("id_monstro");
             entity.Property(e => e.ImageUrl)
                 .HasMaxLength(100)
                 .HasColumnName("image_url");
-
-            entity.HasOne(d => d.IdMonstroNavigation).WithMany(p => p.ImagenMonstros)
-                .HasForeignKey(d => d.IdMonstro)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("fk_monstro");
         });
 
         modelBuilder.Entity<Item>(entity =>
@@ -208,6 +199,7 @@ public partial class MhwApiContext : DbContext
 
             entity.Property(e => e.IdMonstrog).HasColumnName("id_monstrog");
             entity.Property(e => e.IdCategoria).HasColumnName("id_categoria");
+            entity.Property(e => e.IdImagen).HasColumnName("id_imagen");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(20)
                 .HasColumnName("nombre");
@@ -217,6 +209,11 @@ public partial class MhwApiContext : DbContext
                 .HasForeignKey(d => d.IdCategoria)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_categoria");
+
+            entity.HasOne(d => d.IdImagenNavigation).WithMany(p => p.MonstroGrandes)
+                .HasForeignKey(d => d.IdImagen)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_imagen");
         });
 
         modelBuilder.Entity<Rango>(entity =>
