@@ -9,7 +9,14 @@ drop table if exists elemento_monstro cascade;
 DROP table if exists monstro_grande cascade;
 drop table if exists categoria_monstro cascade;
 drop table if exists imagen_monstro cascade;
+drop table if exists usuario cascade;
 
+create table usuario (
+ idUsuario serial unique,
+ nombreUsuario varchar(50),
+ password varchar(50),
+ primary key (idUsuario)
+);
 
 create TABLE categoria_monstro (
  id_tipo_monstro serial UNIQUE,
