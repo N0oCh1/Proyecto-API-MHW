@@ -7,15 +7,10 @@ namespace Proyecto_API_MHW.Contexts;
 
 public partial class MhwApiContext : DbContext
 {
-    public MhwApiContext()
-    {
-    }
-
     public MhwApiContext(DbContextOptions<MhwApiContext> options)
         : base(options)
     {
     }
-
     public virtual DbSet<Bioma> Biomas { get; set; }
 
     public virtual DbSet<CategoriaMonstro> CategoriaMonstros { get; set; }
@@ -36,13 +31,13 @@ public partial class MhwApiContext : DbContext
 
     public virtual DbSet<Rango> Rangos { get; set; }
 
-    public virtual DbSet<VMonstroGrande> VMonstroGrandes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseNpgsql("Name=ConnectionStrings:DefaultConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+
         modelBuilder.Entity<Bioma>(entity =>
         {
             entity.HasKey(e => e.IdBioma).HasName("biomas_pkey");
@@ -243,22 +238,6 @@ public partial class MhwApiContext : DbContext
                         j.IndexerProperty<int>("IdRango").HasColumnName("id_rango");
                         j.IndexerProperty<int>("IdMonstro").HasColumnName("id_monstro");
                     });
-        });
-
-        modelBuilder.Entity<VMonstroGrande>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("v_monstro_grande");
-
-            entity.Property(e => e.IdMonstrog).HasColumnName("id_monstrog");
-            entity.Property(e => e.Nombre)
-                .HasMaxLength(20)
-                .HasColumnName("nombre");
-            entity.Property(e => e.Tipo)
-                .HasMaxLength(20)
-                .HasColumnName("tipo");
-            entity.Property(e => e.Vida).HasColumnName("vida");
         });
 
         OnModelCreatingPartial(modelBuilder);
