@@ -109,7 +109,7 @@ namespace Proyecto_API_MHW.Controllers
                 .ToListAsync();
             if(response == null)
             {
-                return StatusCode(500, "Ocurrio un error");
+                return StatusCode(404, "Monstro no encontrado");
             }
             return Ok(response.Find(x => x.idMonstro == id));
         }

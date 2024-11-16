@@ -226,12 +226,4 @@ insert into items (nombre_item,descripcion_item,id_monstro) values
 ('itemEjemplo', 'descripcionItem', 2);
 
 
-CREATE OR REPLACE VIEW v_monstro_grande as 
-select 
-	id_monstrog,
-	nombre,
-	vida,
-	tipo
-from
-	monstro_grande
-inner join categoria_monstro on monstro_grande.id_categoria = categoria_monstro.id_tipo_monstro;
+
