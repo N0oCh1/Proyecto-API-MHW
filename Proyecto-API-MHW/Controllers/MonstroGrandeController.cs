@@ -19,7 +19,7 @@ namespace Proyecto_API_MHW.Controllers
         {
             this.MhwApi = context;
         }
-    // URL para obtener una prevista de los mosntros
+    // URL para obtener una prevista de los mosntros 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<List<DtoMonstroPreview>>> GetPreview()
@@ -263,5 +263,19 @@ namespace Proyecto_API_MHW.Controllers
             await MhwApi.SaveChangesAsync();
             return StatusCode(201, "Se modifico correctamente");
         }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<MonstroGrande>> EliminarMonstro (int id)
+        {
+            MonstroGrande monstroElegido = new MonstroGrande()
+            {
+                IdMonstrog = id
+            };
+            MhwApi.MonstroGrandes.Remove(monstroElegido);
+            await MhwApi.SaveChangesAsync();
+            return StatusCode(200, $"Monstro eliminado id: {id}");
+        }
+
+
     }
 }
