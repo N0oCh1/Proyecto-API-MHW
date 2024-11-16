@@ -3,7 +3,7 @@
 ## EndPoints
 ## GET
 
-https://localhost:7101/monstro
+https://localhost:5000/monstro
 
 Retornara
 ```
@@ -22,7 +22,7 @@ Retornara
 
 ```
 
-https://localhost:7101/monstro/{id}
+https://localhost:5000/monstro/{id}
 
 Tienes que ingresar el ID del monstro a buscar
 
@@ -95,7 +95,7 @@ Retornara
 
 ## POST
 
-https://localhost:7101/monstro
+https://localhost:5000/monstro
 
 Al hacer POST necesitaras introducir en el siguiente formato del BODY: 
 ```
@@ -155,7 +155,7 @@ retornara
 
 ## PUT
 
-https://localhost:7101/monstro/{id}
+https://localhost:5000/monstro/{id}
 
 Al querer Actualizar un dato se necistara el ID y los datos a Actualizar
 ```
@@ -201,7 +201,7 @@ Al querer Actualizar un dato se necistara el ID y los datos a Actualizar
 
 ## DELETE
 
-https://localhost:7101/monstro/{id}
+https://localhost:5000/monstro/{id}
 
 AL querer Eliminar un registro se necesitara del ID
 
@@ -235,7 +235,7 @@ Retornara
 409, "Existe usuaario con ese nombre
 ```
 
-https://localhost:7101/usuario
+https://localhost:5000/usuario
 
 EndPoint para validar el usuario 
 
