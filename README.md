@@ -1,5 +1,10 @@
 # Monster Hunter World API ⭐
 
+Para poner en funcionamiento tendras que cambiar los paramentros de la base de datos 
+
+y ejecutar el archivo backup de la base de datos en el archivo sql
+
+
 ## EndPoints
 ## GET
 
