@@ -39,6 +39,7 @@ namespace Proyecto_API_MHW.Controllers
                     detalle = $"https://localhost:7101/monstro/{monstro.IdMonstrog}"
                 })
                 .AsNoTracking()
+                .OrderBy(e=>e.idMonstro)
                 .ToListAsync()
                 );
         }
@@ -200,6 +201,22 @@ namespace Proyecto_API_MHW.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<MonstroGrande>> PutMonstro (int id, [FromBody] DtomonstroGrande data)
         {
+            bool monstroIsExist = false;
+            int idMonstroExistente = 0;
+            // valido si ya existe un monstro con el mismo nombre
+            await MhwApi.MonstroGrandes.ForEachAsync(monstro =>
+            {
+                if (monstro.Nombre == data.nombre && monstro.IdMonstrog != id)
+                {
+                    monstroIsExist = true;
+                    idMonstroExistente = monstro.IdMonstrog;
+                }
+            });
+            if (monstroIsExist)
+            {
+                return StatusCode(409, $"El monstro ya existe id: {idMonstroExistente}");
+            }
+            // obtengo los datos del monstro para actualizar sus propiedades 
             MonstroGrande monstroElegido = await MhwApi.MonstroGrandes
                 .Include(m => m.IdCategoriaNavigation)
                 .Include(m => m.IdBiomas)
@@ -211,6 +228,7 @@ namespace Proyecto_API_MHW.Controllers
                 .ThenInclude(e => e.IdElementoNavigation)
                 .FirstOrDefaultAsync(e => e.IdMonstrog == id);
 
+        // bloque de las actualizaciones
             monstroElegido.Nombre = data.nombre;
             monstroElegido.Vida = data.vida;
             monstroElegido.IdCategoria = data.tipo.id_categoria;
