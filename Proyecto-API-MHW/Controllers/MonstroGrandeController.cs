@@ -49,7 +49,6 @@ namespace Proyecto_API_MHW.Controllers
         public async Task<ActionResult<List<DtomonstroGrande>>> GetMonstro(int id)
         {
             List<DtomonstroGrande> response = await MhwApi.MonstroGrandes
-
                 .AsSplitQuery()
                 .Include(m => m.IdCategoriaNavigation)
                 .Include(m => m.IdBiomas)
@@ -108,6 +107,10 @@ namespace Proyecto_API_MHW.Controllers
                 )
                 .AsNoTracking()
                 .ToListAsync();
+            if(response == null)
+            {
+                return StatusCode(500, "Ocurrio un error");
+            }
             return Ok(response.Find(x => x.idMonstro == id));
         }
 
@@ -227,7 +230,10 @@ namespace Proyecto_API_MHW.Controllers
                 .Include(m => m.MgDebilidades)
                 .ThenInclude(e => e.IdElementoNavigation)
                 .FirstOrDefaultAsync(e => e.IdMonstrog == id);
-
+            if(monstroElegido == null)
+            {
+                return StatusCode(500, "Ocurrio un Error");
+            }
         // bloque de las actualizaciones
             monstroElegido.Nombre = data.nombre;
             monstroElegido.Vida = data.vida;
@@ -255,7 +261,7 @@ namespace Proyecto_API_MHW.Controllers
                 DescripcionItem = i.description
             }));
             await MhwApi.SaveChangesAsync();
-            return StatusCode(201, "se modifico correctamente");
+            return StatusCode(201, "Se modifico correctamente");
         }
     }
 }
