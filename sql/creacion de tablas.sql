@@ -150,12 +150,12 @@ insert into categoria_monstro (tipo) values
 
 insert into imagen_monstro (icon_url, image_url) values
 (
-'https://static.wikia.nocookie.net/monsterhunterespanol/images/4/42/MHW-Icono_Pukei-Pukei.png/revision/latest/scale-to-width-down/80?cb=20210823122942&path-prefix=es',
-'https://static.wikia.nocookie.net/monsterhunterespanol/images/b/bf/MHW-Render_Pukei-Pukei.png/revision/latest/scale-to-width-down/1000?cb=20171119121532&path-prefix=es'
+'https://cdn.kiranico.net/file/kiranico/mhworld-web/mhw/icon/em102_ID.png',
+'https://www.mandatory.gg/wp-content/uploads/mandatory-mhrise-guides-monstres-pukei-pukei.png'
 ),
 (
-'https://static.wikia.nocookie.net/monsterhunterespanol/images/3/30/MHW-Icono_Tobi-Kadachi.png/revision/latest?cb=20210823124001&path-prefix=es', 
-'https://static.wikia.nocookie.net/monsterhunterespanol/images/4/43/MHRise-Render_Tobi-Kadachi.png/revision/latest?cb=20210325182434&path-prefix=es');
+'https://cdn.kiranico.net/file/kiranico/mhworld-web/mhw/icon/em109_ID.png', 
+'https://easycdn.es/1/imagenes/monster-hunter-world-pc-ps4-xbox-one_318491.png');
 
 insert into biomas (nombre_bioma) values 
 ('Bosque primigenio'),
