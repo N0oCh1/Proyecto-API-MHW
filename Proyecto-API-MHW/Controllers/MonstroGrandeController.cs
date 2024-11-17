@@ -36,7 +36,7 @@ namespace Proyecto_API_MHW.Controllers
                         imageUrl = monstro.IdImagenNavigation.ImageUrl,
                         iconUrl = monstro.IdImagenNavigation.IconUrl
                     },
-                    detalle = $"https://localhost:7101/monstro/{monstro.IdMonstrog}"
+                    detalle = $"https://localhost:5000/monstro/{monstro.IdMonstrog}"
                 })
                 .AsNoTracking()
                 .OrderBy(e=>e.idMonstro)
