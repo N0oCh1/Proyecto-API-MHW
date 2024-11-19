@@ -63,6 +63,7 @@ namespace Proyecto_API_MHW.Controllers
                     {
                         idMonstro = monstro.IdMonstrog,
                         nombre = monstro.Nombre,
+                        descripcion = monstro.Descripcion,
                         vida = monstro.Vida ?? int.MinValue,
                         tipo = new DtoCategoria() 
                         {
@@ -153,6 +154,7 @@ namespace Proyecto_API_MHW.Controllers
             {
                 Nombre = data.nombre,
                 Vida = data.vida,
+                Descripcion = data.descripcion,
                 IdCategoria = data.tipo.id_categoria ?? int.MinValue,
                 IdImagen = nuevaImagen.IdImagen,
 
@@ -237,6 +239,7 @@ namespace Proyecto_API_MHW.Controllers
         // bloque de las actualizaciones
             monstroElegido.Nombre = data.nombre;
             monstroElegido.Vida = data.vida;
+            monstroElegido.Descripcion = data.descripcion;
             monstroElegido.IdCategoria = data.tipo.id_categoria;
             monstroElegido.IdImagenNavigation.ImageUrl = data.imagen.imageUrl;
             monstroElegido.IdImagenNavigation.IconUrl = data.imagen.iconUrl;

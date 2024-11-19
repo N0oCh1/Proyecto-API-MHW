@@ -34,6 +34,7 @@ create table imagen_monstro (
 create table monstro_grande(
 id_monstroG serial UNIQUE,
 nombre varchar(20),
+descripcion text,
 vida int,
 id_imagen int,
 id_categoria int,
@@ -181,9 +182,9 @@ insert into rangos(rango) values
 
 --insercion de datos de prueba
 
-insert into monstro_grande (nombre, vida, id_imagen ,id_categoria) values 
-('Pukei-Pukei', 3481,1,8),
-('Tobi-Hadachi', 2552,2,5);
+insert into monstro_grande (nombre, vida, descripcion, id_imagen ,id_categoria) values 
+('Pukei-Pukei', 3481,'Feroz monstruo que mezcla veneno en sus órganos con plantas para luego escupirlo sobre sus objetivos.' ,1,8),
+('Tobi-Hadachi', 2552,'Habitan en las cotas más altas del Bosque Primigenio y pueden almacenar electricidad estática en su plumaje.',2,5);
 
 insert into mg_rango (id_rango, id_monstro) values 
 (1, 2),
