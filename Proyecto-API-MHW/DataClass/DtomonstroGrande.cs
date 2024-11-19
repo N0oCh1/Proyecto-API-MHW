@@ -7,6 +7,7 @@ namespace Proyecto_API_MHW.DataClass
         public int idMonstro { get; set; }
         public string nombre { get; set; }
         public int vida { get; set; }
+        public string descripcion { get; set; } 
         public DtoCategoria tipo { get; set; }
         public DtoImagen imagen { get;set; }
         public List<DtoBioma> biomas { get; set; }

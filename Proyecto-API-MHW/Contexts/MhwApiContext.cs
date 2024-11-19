@@ -128,10 +128,8 @@ public partial class MhwApiContext : DbContext
 
             entity.Property(e => e.IdImagen).HasColumnName("id_imagen");
             entity.Property(e => e.IconUrl)
-                .HasMaxLength(500)
                 .HasColumnName("icon_url");
             entity.Property(e => e.ImageUrl)
-                .HasMaxLength(500)
                 .HasColumnName("image_url");
         });
 
@@ -193,6 +191,7 @@ public partial class MhwApiContext : DbContext
             entity.ToTable("monstro_grande");
 
             entity.Property(e => e.IdMonstrog).HasColumnName("id_monstrog");
+            entity.Property(e => e.Descripcion).HasColumnName("descripcion");
             entity.Property(e => e.IdCategoria).HasColumnName("id_categoria");
             entity.Property(e => e.IdImagen).HasColumnName("id_imagen");
             entity.Property(e => e.Nombre)
