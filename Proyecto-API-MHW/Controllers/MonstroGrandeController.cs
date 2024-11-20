@@ -115,6 +115,15 @@ namespace Proyecto_API_MHW.Controllers
             return Ok(response.Find(x => x.idMonstro == id));
         }
 
+        [HttpGet("biomas")]
+        public async Task<ActionResult<List<DtoBioma>>> getBiomas ()
+        {
+            return await MhwApi.Biomas.Select(x => new DtoBioma() 
+            { 
+                id_bioma = x.IdBioma,
+                bioma = x.NombreBioma
+            }).ToListAsync();
+        }
      // URL para incresar nuevos monstros
         [HttpPost]
         public async Task<ActionResult<MonstroGrande>> CrearMonstro (DtomonstroGrande data) 
