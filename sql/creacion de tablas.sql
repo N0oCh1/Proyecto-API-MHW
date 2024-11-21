@@ -164,7 +164,15 @@ insert into biomas (nombre_bioma) values
 ('Altiplano coralinos'),
 ('Valle putrefacto'),
 ('Lecho de los ancianos'),
-('Arroyo de escarcha');
+('Arroyo de escarcha'),
+('Tierras destino'),
+('Gran desfiladero'),
+('Torrente eterno'),
+('Confluencia de destinos'),
+('Cavernas de El Dorado'),
+('Isla origen'),
+('Valle remoto'),
+('Castillo skrad');
 
 insert into elementos (elemento) values 
 ('Fuego'),
