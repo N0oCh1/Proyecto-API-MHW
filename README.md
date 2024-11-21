@@ -8,7 +8,7 @@ y ejecutar el archivo backup de la base de datos en el archivo sql
 ## EndPoints
 ## GET
 
-https://localhost:5000/monstro
+https://localhost:7101/monstro
 
 Retornara
 ```
@@ -16,6 +16,9 @@ Retornara
   {
     "idMonstro": 0,
     "nombre": "string",
+    "elementos" : {
+    "elemento": "string
+    }
     "imagen": {
       "id_imagen": 0,
       "imageUrl": "string",
@@ -27,7 +30,7 @@ Retornara
 
 ```
 
-https://localhost:5000/monstro/{id}
+https://localhost:7101/monstro/{id}
 
 Tienes que ingresar el ID del monstro a buscar
 
@@ -100,7 +103,7 @@ Retornara
 
 ## POST
 
-https://localhost:5000/monstro
+https://localhost:7101/monstro
 
 Al hacer POST necesitaras introducir en el siguiente formato del BODY: 
 ```
@@ -160,7 +163,7 @@ retornara
 
 ## PUT
 
-https://localhost:5000/monstro/{id}
+https://localhost:7101/monstro/{id}
 
 Al querer Actualizar un dato se necistara el ID y los datos a Actualizar
 ```
@@ -206,7 +209,7 @@ Al querer Actualizar un dato se necistara el ID y los datos a Actualizar
 
 ## DELETE
 
-https://localhost:5000/monstro/{id}
+https://localhost:7101/monstro/{id}
 
 AL querer Eliminar un registro se necesitara del ID
 
@@ -240,7 +243,7 @@ Retornara
 409, "Existe usuaario con ese nombre
 ```
 
-https://localhost:5000/usuario
+https://localhost:7101/usuario
 
 EndPoint para validar el usuario 
 
