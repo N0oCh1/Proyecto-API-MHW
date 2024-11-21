@@ -25,11 +25,16 @@ namespace Proyecto_API_MHW.Controllers
         public async Task<ActionResult<List<DtoMonstroPreview>>> GetPreview()
         {
             return Ok(await MhwApi.MonstroGrandes
+                .Include(e=>e.IdElementos)
                 .AsSplitQuery()
                 .Select(monstro => new DtoMonstroPreview
                 {
                     idMonstro = monstro.IdMonstrog,
                     nombre = monstro.Nombre,
+                    elementos = monstro.IdElementos.Select(e => new DtoElemento()
+                    {
+                        elemento = e.Elemento1
+                    }).ToList(),
                     imagen =  new DtoImagen()
                     {
                         id_imagen = monstro.IdImagenNavigation.IdImagen,
@@ -209,72 +214,105 @@ namespace Proyecto_API_MHW.Controllers
             });
         // guardo los datos insertado para ese mosntro
             await MhwApi.SaveChangesAsync();
-            return StatusCode(201, "se inserto correctamente");
+            return Ok();
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<MonstroGrande>> PutMonstro (int id, [FromBody] DtomonstroGrande data)
+        public async Task<ActionResult<MonstroGrande>> PutMonstro(int id, [FromBody] DtomonstroGrande data)
         {
-            bool monstroIsExist = false;
-            int idMonstroExistente = 0;
-            // valido si ya existe un monstro con el mismo nombre
-            await MhwApi.MonstroGrandes.ForEachAsync(monstro =>
+            try
             {
-                if (monstro.Nombre == data.nombre && monstro.IdMonstrog != id)
+                int idMonstroExistente = 0;
+                // Validar si ya existe un monstro con el mismo nombre
+                bool monstroIsExist = await MhwApi.MonstroGrandes
+                .AnyAsync(monstro => monstro.Nombre == data.nombre && monstro.IdMonstrog != id);
+
+                if (monstroIsExist)
                 {
-                    monstroIsExist = true;
-                    idMonstroExistente = monstro.IdMonstrog;
+                    return Conflict($"El monstro ya existe con id: {idMonstroExistente}");
                 }
-            });
-            if (monstroIsExist)
-            {
-                return StatusCode(409, $"El monstro ya existe id: {idMonstroExistente}");
+
+                // Obtener el monstro para actualizar
+                MonstroGrande monstroElegido = await MhwApi.MonstroGrandes
+                    .Include(m => m.IdCategoriaNavigation)
+                    .Include(m => m.IdBiomas)
+                    .Include(m => m.IdElementos)
+                    .Include(m => m.IdImagenNavigation)
+                    .Include(m => m.IdRangos)
+                    .Include(m => m.Items)
+                    .Include(m => m.MgDebilidades)
+                    .ThenInclude(e => e.IdElementoNavigation)
+                    .FirstOrDefaultAsync(e => e.IdMonstrog == id);
+
+                if (monstroElegido == null)
+                {
+                    return NotFound("El monstro no existe.");
+                }
+
+                // Actualizar propiedades
+                monstroElegido.Nombre = data.nombre;
+                monstroElegido.Vida = data.vida;
+                monstroElegido.Descripcion = data.descripcion;
+                monstroElegido.IdCategoria = data.tipo.id_categoria;
+                monstroElegido.IdImagenNavigation.ImageUrl = data.imagen.imageUrl;
+                monstroElegido.IdImagenNavigation.IconUrl = data.imagen.iconUrl;
+
+                monstroElegido.IdBiomas.Clear();
+                data.biomas.ForEach(b =>
+                {
+                    var bioma = MhwApi.Biomas.Find(b.id_bioma);
+                    if (bioma != null) monstroElegido.IdBiomas.Add(bioma);
+                });
+
+                monstroElegido.IdRangos.Clear();
+                data.rangos.ForEach(r =>
+                {
+                    var rango = MhwApi.Rangos.Find(r.id_rango);
+                    if (rango != null) monstroElegido.IdRangos.Add(rango);
+                });
+
+                monstroElegido.IdElementos.Clear();
+                data.elementos.ForEach(e =>
+                {
+                    var elemento = MhwApi.Elementos.Find(e.id_elemento);
+                    if (elemento != null) monstroElegido.IdElementos.Add(elemento);
+                });
+
+                monstroElegido.MgDebilidades.Clear();
+                data.debilidad.ForEach(w =>
+                {
+                    var elemento = MhwApi.Elementos.Find(w.id_elemento);
+                    if (elemento != null)
+                    {
+                        monstroElegido.MgDebilidades.Add(new MgDebilidade()
+                        {
+                            IdElementoNavigation = elemento,
+                            IdMonstroNavigation = monstroElegido,
+                            Eficacia = w.eficacia
+                        });
+                    }
+                });
+
+                monstroElegido.Items.Clear();
+                data.items.ForEach(i =>
+                {
+                    monstroElegido.Items.Add(new Item()
+                    {
+                        NombreItem = i.name,
+                        DescripcionItem = i.description
+                    });
+                });
+
+                await MhwApi.SaveChangesAsync();
+                return Ok();
             }
-            // obtengo los datos del monstro para actualizar sus propiedades 
-            MonstroGrande monstroElegido = await MhwApi.MonstroGrandes
-                .Include(m => m.IdCategoriaNavigation)
-                .Include(m => m.IdBiomas)
-                .Include(m => m.IdElementos)
-                .Include(m => m.IdImagenNavigation)
-                .Include(m => m.IdRangos)
-                .Include(m => m.Items)
-                .Include(m => m.MgDebilidades)
-                .ThenInclude(e => e.IdElementoNavigation)
-                .FirstOrDefaultAsync(e => e.IdMonstrog == id);
-            if(monstroElegido == null)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Ocurrio un Error");
+                // Captura la excepción y devuélvela al cliente
+                return StatusCode(500, $"Error interno: {ex.Message}");
             }
-        // bloque de las actualizaciones
-            monstroElegido.Nombre = data.nombre;
-            monstroElegido.Vida = data.vida;
-            monstroElegido.Descripcion = data.descripcion;
-            monstroElegido.IdCategoria = data.tipo.id_categoria;
-            monstroElegido.IdImagenNavigation.ImageUrl = data.imagen.imageUrl;
-            monstroElegido.IdImagenNavigation.IconUrl = data.imagen.iconUrl;
-            
-            monstroElegido.IdBiomas.Clear();
-            data.biomas.ForEach(b => monstroElegido.IdBiomas.Add(MhwApi.Biomas.Find(b.id_bioma)));
-            monstroElegido.IdRangos.Clear();
-            data.rangos.ForEach(r => monstroElegido.IdRangos.Add(MhwApi.Rangos.Find(r.id_rango)));
-            monstroElegido.IdElementos.Clear();
-            data.elementos.ForEach(e => monstroElegido.IdElementos.Add(MhwApi.Elementos.Find(e.id_elemento)));
-            monstroElegido.MgDebilidades.Clear();
-            data.debilidad.ForEach(w => monstroElegido.MgDebilidades.Add(new MgDebilidade()
-            {
-                IdElementoNavigation = MhwApi.Elementos.Find(w.id_elemento),
-                IdMonstroNavigation = MhwApi.MonstroGrandes.Find(id),
-                Eficacia = w.eficacia
-            }));
-            monstroElegido.Items.Clear();
-            data.items.ForEach(i => monstroElegido.Items.Add(new Item()
-            {
-                NombreItem = i.name,
-                DescripcionItem = i.description
-            }));
-            await MhwApi.SaveChangesAsync();
-            return StatusCode(201, "Se modifico correctamente");
         }
+
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<MonstroGrande>> EliminarMonstro (int id)
@@ -285,7 +323,7 @@ namespace Proyecto_API_MHW.Controllers
             };
             MhwApi.MonstroGrandes.Remove(monstroElegido);
             await MhwApi.SaveChangesAsync();
-            return StatusCode(200, $"Monstro eliminado id: {id}");
+            return Ok( $"Monstro eliminado id: {id}");
         }
 
 
