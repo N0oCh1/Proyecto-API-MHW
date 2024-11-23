@@ -1,8 +1,18 @@
 # Monster Hunter World API ⭐
 
+![image](https://github.com/user-attachments/assets/c59b7501-c098-4e7e-947d-ffe6d6a93e13)
+
 Para poner en funcionamiento tendras que cambiar los paramentros de la base de datos 
 
 y ejecutar el archivo backup de la base de datos en el archivo sql
+
+## Integrantes
+
+Ruben Feng
+
+Gael Pereira
+
+CesarAburto
 
 
 ## EndPoints
