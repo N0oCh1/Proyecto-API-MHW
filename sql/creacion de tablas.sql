@@ -177,9 +177,9 @@ insert into biomas (nombre_bioma) values
 insert into elementos (elemento) values 
 ('Fuego'),
 ('Agua'),
-('Treuno'),
+('Trueno'),
 ('Hielo'),
-('Dragon'),
+('Draco'),
 ('Ninguno');
 
 insert into rangos(rango) values
