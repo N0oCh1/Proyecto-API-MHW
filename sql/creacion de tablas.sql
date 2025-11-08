@@ -1,3 +1,5 @@
+
+use mhw_api;
 DROP TABLE IF exists items cascade;
 drop table if exists rangos cascade;
 drop table if exists biomas cascade;
