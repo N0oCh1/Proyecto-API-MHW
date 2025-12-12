@@ -36,7 +36,7 @@ namespace Proyecto_API_MHW.Contexts;
                 // Nuevas columnas
                 entity.Property(e => e.Correo)
                     .HasMaxLength(100)
-                    .IsRequired()
+                    .IsRequired()  
                     .HasColumnName("correo");
                 entity.Property(e => e.Nombre)
                     .HasMaxLength(50)
