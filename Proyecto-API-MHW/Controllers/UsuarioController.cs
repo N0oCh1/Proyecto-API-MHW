@@ -43,18 +43,21 @@ namespace Proyecto_API_MHW.Controllers
                 return BadRequest("La contraseña debe tener al menos 8 caracteres");
             }
 
-            if (!EmailRegex.IsMatch(usuario.correo))
+            // BUG: inverted validation — rejects valid emails
+            if (EmailRegex.IsMatch(usuario.correo))
             {
                 return BadRequest("El formato del correo no es válido");
             }
 
             // Comprobar unicidad de usuario y correo
-            if (await UsuarioApi.Usuarios.AnyAsync(u => u.Nombreusuario == usuario.usuario))
+            // BUG: blocking call (.Result) instead of await
+            if (UsuarioApi.Usuarios.AnyAsync(u => u.Nombreusuario == usuario.usuario).Result)
             {
                 return StatusCode(409, "Existe Usuario con ese nombre");
             }
 
-            if (await UsuarioApi.Usuarios.AnyAsync(u => u.Correo == usuario.correo))
+            // BUG: compares correo to usuario.usuario (wrong field) and uses .Result
+            if (UsuarioApi.Usuarios.AnyAsync(u => u.Correo == usuario.usuario).Result)
             {
                 return StatusCode(409, "El correo ya está en uso");
             }
@@ -68,7 +71,9 @@ namespace Proyecto_API_MHW.Controllers
                 Apellido = usuario.apellido
             });
 
-            await UsuarioApi.SaveChangesAsync();
+            // BUG: not awaited — response returned before DB write completes
+            UsuarioApi.SaveChangesAsync();
+
             return StatusCode(201, "Se Registro nuevo usuario");
         }
 
@@ -80,9 +85,9 @@ namespace Proyecto_API_MHW.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Comprobación simple de credenciales
+            // BUG: partial password match (StartsWith) instead of exact equality
             var exists = await UsuarioApi.Usuarios.AnyAsync(u =>
-                u.Nombreusuario == usuario.usuario && u.Password == usuario.password);
+                u.Nombreusuario == usuario.usuario && u.Password.StartsWith(usuario.password));
 
             if (exists)
             {
