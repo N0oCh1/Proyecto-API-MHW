@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: MHW-API
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - mhwnet
+
+  api:
+    build:
+      context: .
+      dockerfile: ./dockerfile
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      # The app reads ConnectionStrings:DefaultConnection from configuration.
+      # To override via env var use the double-underscore syntax for hierarchical keys.
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=MHW-API;Username=postgres;Password=admin"
+      # Ensure the app listens on 5000 (this matches the Dockerfile); change if you updated the Dockerfile.
+      ASPNETCORE_URLS: "http://+:5000"
+    ports:
+      - "5000:5000"
+    networks:
+      - mhwnet
+
+  frontend:
+    image: nginx:alpine
+    # Expects built frontend assets in ./frontend/dist (adjust to your build output)
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - mhwnet
+
+volumes:
+  db_data:
+
+networks:
+  mhwnet:
+    driver: bridge

@@ -278,3 +278,25 @@ Retornara
 Ok, 200
 ```
 
+## Docker
+
+Build and run the API with Docker (PowerShell examples):
+
+1. Build image (run from repository root):
+
+```powershell
+docker build -t proyecto-api-mhw -f .\dockerfile .
+```
+
+2. Run container mapping port 5000 to host 5000:
+
+```powershell
+docker run --rm -p 5000:5000 --name proyecto-api-mhw proyecto-api-mhw
+```
+
+3. The API will be reachable at http://localhost:5000 (or adjust port mapping).
+
+Notes:
+- The Dockerfile uses .NET 8 SDK/runtime images because the project targets `net8.0`.
+- If your API uses a different port or Kestrel configuration in `appsettings`, adjust the `ASPNETCORE_URLS` or the `-p` mapping accordingly.
+

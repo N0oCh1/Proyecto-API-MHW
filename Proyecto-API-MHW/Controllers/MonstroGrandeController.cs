@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proyecto_API_MHW.Contexts;
 using Proyecto_API_MHW.DataClass;
 using Proyecto_API_MHW.Models;
-using System.Linq;
 
 namespace Proyecto_API_MHW.Controllers
 {
@@ -19,13 +16,13 @@ namespace Proyecto_API_MHW.Controllers
         {
             this.MhwApi = context;
         }
-    // URL para obtener una prevista de los mosntros 
+        // URL para obtener una prevista de los mosntros 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<List<DtoMonstroPreview>>> GetPreview()
         {
             return Ok(await MhwApi.MonstroGrandes
-                .Include(e=>e.IdElementos)
+                .Include(e => e.IdElementos)
                 .AsSplitQuery()
                 .Select(monstro => new DtoMonstroPreview
                 {
@@ -35,7 +32,7 @@ namespace Proyecto_API_MHW.Controllers
                     {
                         elemento = e.Elemento1
                     }).ToList(),
-                    imagen =  new DtoImagen()
+                    imagen = new DtoImagen()
                     {
                         id_imagen = monstro.IdImagenNavigation.IdImagen,
                         imageUrl = monstro.IdImagenNavigation.ImageUrl,
@@ -44,16 +41,19 @@ namespace Proyecto_API_MHW.Controllers
                     detalle = $"https://localhost:7101/monstro/{monstro.IdMonstrog}"
                 })
                 .AsNoTracking()
-                .OrderBy(e=>e.idMonstro)
+                .OrderBy(e => e.idMonstro)
                 .ToListAsync()
                 );
         }
-    // URL del detalle de los cada monstros
+        // URL del detalle de los cada monstros
+
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<DtomonstroGrande>>> GetMonstro(int id)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<DtomonstroGrande>> GetMonstro(int id)
         {
-            List<DtomonstroGrande> response = await MhwApi.MonstroGrandes
+            var dto = await MhwApi.MonstroGrandes
+                .Where(m => m.IdMonstrog == id)        // <-- filtrar en BD
                 .AsSplitQuery()
                 .Include(m => m.IdCategoriaNavigation)
                 .Include(m => m.IdBiomas)
@@ -62,101 +62,122 @@ namespace Proyecto_API_MHW.Controllers
                 .Include(m => m.IdRangos)
                 .Include(m => m.Items)
                 .Include(m => m.MgDebilidades)
-                .ThenInclude(e => e.IdElementoNavigation)
-                .Select(monstro =>
-                    new DtomonstroGrande()
-                    {
-                        idMonstro = monstro.IdMonstrog,
-                        nombre = monstro.Nombre,
-                        descripcion = monstro.Descripcion,
-                        vida = monstro.Vida ?? int.MinValue,
-                        tipo = new DtoCategoria() 
-                        {
-                            id_categoria = monstro.IdCategoria,
-                            categoria = monstro.IdCategoriaNavigation.Tipo
-                        },
-                        imagen = new DtoImagen()
-                        {
-                            id_imagen = monstro.IdImagenNavigation.IdImagen,
-                            imageUrl= monstro.IdImagenNavigation.ImageUrl,
-                            iconUrl = monstro.IdImagenNavigation.IconUrl
-                        },
-                        biomas = monstro.IdBiomas.Select(b => new DtoBioma()
-                        {
-                            id_bioma = b.IdBioma,
-                            bioma = b.NombreBioma
-                        }).ToList(),
-                        rangos = monstro.IdRangos.Select(r => new DtoRango()
-                        {
-                            id_rango = r.IdRango,
-                            rango = r.Rango1
-                        }).ToList(),
-                        elementos = monstro.IdElementos.Select(e => new DtoElemento()
-                        {
-                            id_elemento = e.IdElemento,
-                            elemento = e.Elemento1
-                        }).ToList(),
-                        debilidad = monstro.MgDebilidades.Select(d => new DtoDebilidad()
-                        {
-                            id_elemento = d.IdElemento, 
-                            elemento = d.IdElementoNavigation.Elemento1,
-                            eficacia = (double)d.Eficacia,
-                        }).ToList(),
-                        items = monstro.Items.Select(i => new DtoItem()
-                        {
-                            id = i.IdItem,
-                            name = i.NombreItem,
-                            description = i.DescripcionItem
-                        }).ToList(),
+                    .ThenInclude(d => d.IdElementoNavigation)
+                .Select(monstro => new DtomonstroGrande
+                {
+                    idMonstro = monstro.IdMonstrog,
+                    nombre = monstro.Nombre,
+                    descripcion = monstro.Descripcion,
+                    // Si Vida es int? en el modelo EF, elige un fallback razonable
+                    vida = monstro.Vida ?? 0,
 
-                    }
-                )
+                    // Navegación de categoría (puede ser null si no obligatoria)
+                    tipo = new DtoCategoria
+                    {
+                        id_categoria = monstro.IdCategoria,
+                        categoria = monstro.IdCategoriaNavigation != null
+                                       ? monstro.IdCategoriaNavigation.Tipo
+                                       : string.Empty
+                    },
+
+                    // Navegación de imagen: protege null
+                    imagen = monstro.IdImagenNavigation == null
+                             ? new DtoImagen { id_imagen = 0, imageUrl = string.Empty, iconUrl = string.Empty }
+                             : new DtoImagen
+                             {
+                                 id_imagen = monstro.IdImagenNavigation.IdImagen,
+                                 imageUrl = monstro.IdImagenNavigation.ImageUrl ?? string.Empty,
+                                 iconUrl = monstro.IdImagenNavigation.IconUrl ?? string.Empty
+                             },
+
+                    // Colecciones: EF puede materializar null si la navegación es opcional; usa ToList() tras Select
+                    biomas = monstro.IdBiomas != null
+                             ? monstro.IdBiomas.Select(b => new DtoBioma
+                             {
+                                 id_bioma = b.IdBioma,
+                                 bioma = b.NombreBioma
+                             }).ToList()
+                             : new List<DtoBioma>(),
+
+                    rangos = monstro.IdRangos != null
+                             ? monstro.IdRangos.Select(r => new DtoRango
+                             {
+                                 id_rango = r.IdRango,
+                                 rango = r.Rango1
+                             }).ToList()
+                             : new List<DtoRango>(),
+
+                    elementos = monstro.IdElementos != null
+                                ? monstro.IdElementos.Select(e => new DtoElemento
+                                {
+                                    id_elemento = e.IdElemento,
+                                    elemento = e.Elemento1
+                                }).ToList()
+                                : new List<DtoElemento>(),
+
+                    debilidad = monstro.MgDebilidades != null
+                                ? monstro.MgDebilidades.Select(d => new DtoDebilidad
+                                {
+                                    id_elemento = d.IdElemento,
+                                    elemento = d.IdElementoNavigation != null
+                                                    ? d.IdElementoNavigation.Elemento1
+                                                    : string.Empty,
+                                    eficacia = d.Eficacia.HasValue ? (double)d.Eficacia.Value : 0.0
+                                }).ToList()
+                                : new List<DtoDebilidad>(),
+
+                    items = monstro.Items != null
+                            ? monstro.Items.Select(i => new DtoItem
+                            {
+                                id = i.IdItem,
+                                name = i.NombreItem,
+                                description = i.DescripcionItem
+                            }).ToList()
+                            : new List<DtoItem>()
+                })
                 .AsNoTracking()
-                .ToListAsync();
-            if(response == null)
-            {
-                return StatusCode(404, "Monstro no encontrado");
-            }
-            return Ok(response.Find(x => x.idMonstro == id));
+                .FirstOrDefaultAsync();                 // <-- devuelve null si no existe
+
+            if (dto is null)
+                return NotFound("Monstro no encontrado");
+
+            return Ok(dto);
         }
 
-        [HttpGet("biomas")]
-        public async Task<ActionResult<List<DtoBioma>>> getBiomas ()
+            [HttpGet("biomas")]
+        public async Task<ActionResult<List<DtoBioma>>> getBiomas()
         {
-            return await MhwApi.Biomas.Select(x => new DtoBioma() 
-            { 
+            return await MhwApi.Biomas.Select(x => new DtoBioma()
+            {
                 id_bioma = x.IdBioma,
                 bioma = x.NombreBioma
             }).ToListAsync();
         }
-     // URL para incresar nuevos monstros
+        // URL para incresar nuevos monstros
+
         [HttpPost]
-        public async Task<ActionResult<MonstroGrande>> CrearMonstro (DtomonstroGrande data) 
+        public async Task<ActionResult> CrearMonstro(DtomonstroGrande data)
         {
-        bool monstroIsExist = false;
-        int idMonstroExistente = 0;
-        // valido si ya existe un monstro con el mismo nombre
-            await MhwApi.MonstroGrandes.ForEachAsync(monstro =>
-            {
-                if (monstro.Nombre == data.nombre)
-                {
-                    monstroIsExist = true;
-                    idMonstroExistente = monstro.IdMonstrog;
-                }
-            });
-        // validar si el modelo es valido
+            
             if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+                return BadRequest(ModelState); // ver guía de ModelState [2](https://stackoverflow.com/questions/65661027/in-ef-core-5-how-can-i-insert-an-entity-with-a-many-to-many-relation-by-setting)
 
-            if (monstroIsExist)
-            {
-                return StatusCode(409, $"El monstro ya existe id: {idMonstroExistente}");
-            }
+            // 1) Verificar existencia por nombre (más eficiente que ForEachAsync)
+            var existente = await MhwApi.MonstroGrandes
+                .FirstOrDefaultAsync(m => m.Nombre == data.nombre);
 
-            // creo el nuevo mosntro para poder insertar en la base de datos 
-            ImagenMonstro nuevaImagen = new ImagenMonstro()
+            if (existente is not null)
+                return StatusCode(409, $"El monstro ya existe id: {existente.IdMonstrog}");
+
+            // 2) Validar FK requerida (evita int.MinValue)
+            if (data.tipo?.id_categoria is null)
+                return BadRequest("id_categoria es requerido.");
+
+            // 3) Crear imagen (validar que 'imagen' viene)
+            if (data.imagen is null)
+                return BadRequest("imagen es requerida.");
+
+            var nuevaImagen = new ImagenMonstro
             {
                 ImageUrl = data.imagen.imageUrl,
                 IconUrl = data.imagen.iconUrl
@@ -164,158 +185,196 @@ namespace Proyecto_API_MHW.Controllers
             MhwApi.ImagenMonstros.Add(nuevaImagen);
             await MhwApi.SaveChangesAsync();
 
-            MonstroGrande nuevoMonstro = new MonstroGrande()
+            // 4) Crear monstruo principal
+            var nuevoMonstro = new MonstroGrande
             {
                 Nombre = data.nombre,
                 Vida = data.vida,
                 Descripcion = data.descripcion,
-                IdCategoria = data.tipo.id_categoria ?? int.MinValue,
-                IdImagen = nuevaImagen.IdImagen,
-
+                IdCategoria = data.tipo.id_categoria.Value,
+                IdImagen = nuevaImagen.IdImagen
             };
             MhwApi.MonstroGrandes.Add(nuevoMonstro);
             await MhwApi.SaveChangesAsync();
-            // guardo el nuevo mosntro para obtener la ID del mosntro creado
-            int mgID = nuevoMonstro.IdMonstrog;
-        // inserto los items para el monstro
-            data.items.ForEach(item =>
+
+            // 5) Items (uno-a-muchos: se crean siempre, no necesitan Find)
+            data.items?.ForEach(item =>
             {
-                nuevoMonstro.Items.Add(new Item()
+                nuevoMonstro.Items.Add(new Item
                 {
-                    IdMonstro = mgID,
+                    IdMonstro = nuevoMonstro.IdMonstrog,
                     NombreItem = item.name,
                     DescripcionItem = item.description
                 });
             });
-        // inserto el rango del mosntro
-            data.rangos.ForEach(r =>
+
+            // 6) Rangos: validar cada id antes de agregar (FindAsync puede devolver null) [1](https://praeclarum.org/2018/12/17/nullable-reference-types.html)
+            foreach (var r in data.rangos ?? Enumerable.Empty<DtoRango>())
             {
-                nuevoMonstro.IdRangos.Add(MhwApi.Rangos.Find(r.id_rango));
-            });
-        // inserto las debilidades del monstro
-            data.debilidad.ForEach(w =>
+                var rango = await MhwApi.Rangos.FindAsync(r.id_rango);
+                if (rango is null)
+                    return NotFound($"Rango id {r.id_rango} no existe.");
+                nuevoMonstro.IdRangos.Add(rango);
+            }
+
+            // 7) Debilidades: validar elemento existente y crear relación
+            foreach (var w in data.debilidad ?? Enumerable.Empty<DtoDebilidad>())
             {
-                nuevoMonstro.MgDebilidades.Add(new MgDebilidade()
+                var elemento = await MhwApi.Elementos.FindAsync(w.id_elemento);
+                if (elemento is null)
+                    return NotFound($"Elemento id {w.id_elemento} no existe.");
+
+                nuevoMonstro.MgDebilidades.Add(new MgDebilidade
                 {
-                    IdElementoNavigation = MhwApi.Elementos.Find(w.id_elemento),
-                    IdMonstroNavigation = MhwApi.MonstroGrandes.Find(mgID),
+                    IdElementoNavigation = elemento,
+                    IdMonstroNavigation = nuevoMonstro,
                     Eficacia = w.eficacia
                 });
-            });
-        // inserto los elementos del monstro
-            data.elementos.ForEach(e =>
+            }
+
+            // 8) Elementos: validar y agregar
+            foreach (var e in data.elementos ?? Enumerable.Empty<DtoElemento>())
             {
-                nuevoMonstro.IdElementos.Add(MhwApi.Elementos.Find(e.id_elemento));
-            });
-        // inserto el bioma al que pertenece el mosntro
-            data.biomas.ForEach(b =>
+                var el = await MhwApi.Elementos.FindAsync(e.id_elemento);
+                if (el is null)
+                    return NotFound($"Elemento id {e.id_elemento} no existe.");
+
+                nuevoMonstro.IdElementos.Add(el);
+            }
+
+            // 9) Biomas: **este es el caso del warning original**; validar y agregar
+            foreach (var b in data.biomas ?? Enumerable.Empty<DtoBioma>())
             {
-                nuevoMonstro.IdBiomas.Add(MhwApi.Biomas.Find(b.id_bioma));
-            });
-        // guardo los datos insertado para ese mosntro
+                var bioma = await MhwApi.Biomas.FindAsync(b.id_bioma);
+                if (bioma is null)
+                    return NotFound($"Bioma id {b.id_bioma} no existe."); // FindAsync -> null si no existe [1](https://praeclarum.org/2018/12/17/nullable-reference-types.html)
+
+                nuevoMonstro.IdBiomas.Add(bioma); // ya no hay CS8604
+            }
+
             await MhwApi.SaveChangesAsync();
-            return Ok();
+
+            // devuelvo el id creado (útil para frontend)
+            return Ok(new { id = nuevoMonstro.IdMonstrog });
         }
+
 
         [HttpPut("{id}")]
         public async Task<ActionResult<MonstroGrande>> PutMonstro(int id, [FromBody] DtomonstroGrande data)
         {
             try
             {
-                int idMonstroExistente = 0;
-                // Validar si ya existe un monstro con el mismo nombre
-                bool monstroIsExist = await MhwApi.MonstroGrandes
-                .AnyAsync(monstro => monstro.Nombre == data.nombre && monstro.IdMonstrog != id);
+                // 1) Validar nombre duplicado (excluyendo el mismo id)
+                var conflicto = await MhwApi.MonstroGrandes
+                    .FirstOrDefaultAsync(m => m.Nombre == data.nombre && m.IdMonstrog != id);
+                if (conflicto is not null)
+                    return Conflict($"El monstro ya existe con id: {conflicto.IdMonstrog}");
 
-                if (monstroIsExist)
-                {
-                    return Conflict($"El monstro ya existe con id: {idMonstroExistente}");
-                }
-
-                // Obtener el monstro para actualizar
-                MonstroGrande monstroElegido = await MhwApi.MonstroGrandes
+                // 2) Cargar el monstruo a actualizar (SIN AsNoTracking para poder persistir cambios)
+                var monstroElegido = await MhwApi.MonstroGrandes
                     .Include(m => m.IdCategoriaNavigation)
                     .Include(m => m.IdBiomas)
                     .Include(m => m.IdElementos)
                     .Include(m => m.IdImagenNavigation)
                     .Include(m => m.IdRangos)
                     .Include(m => m.Items)
-                    .Include(m => m.MgDebilidades)
-                    .ThenInclude(e => e.IdElementoNavigation)
+                    .Include(m => m.MgDebilidades).ThenInclude(d => d.IdElementoNavigation)
                     .FirstOrDefaultAsync(e => e.IdMonstrog == id);
 
-                if (monstroElegido == null)
+                if (monstroElegido is null)
+                    return NotFound($"Monstro id {id} no existe.");
+
+                // 3) Validaciones/normalizaciones mínimas del DTO para evitar null-derefs
+                if (data.tipo?.id_categoria is null)
+                    return BadRequest("id_categoria es requerido.");
+
+                var imgUrl = data.imagen?.imageUrl ?? string.Empty;
+                var iconUrl = data.imagen?.iconUrl ?? string.Empty;
+
+                // 4) Actualizar propiedades escalares
+                monstroElegido.Nombre = data.nombre ?? monstroElegido.Nombre;
+                monstroElegido.Vida = data.vida;
+                monstroElegido.Descripcion = data.descripcion ?? monstroElegido.Descripcion;
+                monstroElegido.IdCategoria = data.tipo.id_categoria.Value;
+
+                // 5) Navegación de imagen: puede estar null
+                if (monstroElegido.IdImagenNavigation is null)
                 {
-                    return NotFound("El monstro no existe.");
+                    monstroElegido.IdImagenNavigation = new ImagenMonstro
+                    {
+                        ImageUrl = imgUrl,
+                        IconUrl = iconUrl
+                    };
+                }
+                else
+                {
+                    monstroElegido.IdImagenNavigation.ImageUrl = imgUrl;
+                    monstroElegido.IdImagenNavigation.IconUrl = iconUrl;
                 }
 
-                // Actualizar propiedades
-                monstroElegido.Nombre = data.nombre;
-                monstroElegido.Vida = data.vida;
-                monstroElegido.Descripcion = data.descripcion;
-                monstroElegido.IdCategoria = data.tipo.id_categoria;
-                monstroElegido.IdImagenNavigation.ImageUrl = data.imagen.imageUrl;
-                monstroElegido.IdImagenNavigation.IconUrl = data.imagen.iconUrl;
-
+                // 6) Actualizar colecciones (protegiendo DTOs null y usando FindAsync)
                 monstroElegido.IdBiomas.Clear();
-                data.biomas.ForEach(b =>
+                foreach (var b in (data.biomas ?? new List<DtoBioma>()))
                 {
-                    var bioma = MhwApi.Biomas.Find(b.id_bioma);
-                    if (bioma != null) monstroElegido.IdBiomas.Add(bioma);
-                });
+                    var bioma = await MhwApi.Biomas.FindAsync(b.id_bioma); // null si no existe
+                    if (bioma is null) return NotFound($"Bioma id {b.id_bioma} no existe.");
+                    monstroElegido.IdBiomas.Add(bioma);
+                }
 
                 monstroElegido.IdRangos.Clear();
-                data.rangos.ForEach(r =>
+                foreach (var r in (data.rangos ?? new List<DtoRango>()))
                 {
-                    var rango = MhwApi.Rangos.Find(r.id_rango);
-                    if (rango != null) monstroElegido.IdRangos.Add(rango);
-                });
+                    var rango = await MhwApi.Rangos.FindAsync(r.id_rango);
+                    if (rango is null) return NotFound($"Rango id {r.id_rango} no existe.");
+                    monstroElegido.IdRangos.Add(rango);
+                }
 
                 monstroElegido.IdElementos.Clear();
-                data.elementos.ForEach(e =>
+                foreach (var e in (data.elementos ?? new List<DtoElemento>()))
                 {
-                    var elemento = MhwApi.Elementos.Find(e.id_elemento);
-                    if (elemento != null) monstroElegido.IdElementos.Add(elemento);
-                });
+                    var elemento = await MhwApi.Elementos.FindAsync(e.id_elemento);
+                    if (elemento is null) return NotFound($"Elemento id {e.id_elemento} no existe.");
+                    monstroElegido.IdElementos.Add(elemento);
+                }
 
                 monstroElegido.MgDebilidades.Clear();
-                data.debilidad.ForEach(w =>
+                foreach (var w in (data.debilidad ?? new List<DtoDebilidad>()))
                 {
-                    var elemento = MhwApi.Elementos.Find(w.id_elemento);
-                    if (elemento != null)
+                    var elemento = await MhwApi.Elementos.FindAsync(w.id_elemento);
+                    if (elemento is null) return NotFound($"Elemento id {w.id_elemento} no existe.");
+
+                    monstroElegido.MgDebilidades.Add(new MgDebilidade
                     {
-                        monstroElegido.MgDebilidades.Add(new MgDebilidade()
-                        {
-                            IdElementoNavigation = elemento,
-                            IdMonstroNavigation = monstroElegido,
-                            Eficacia = w.eficacia
-                        });
-                    }
-                });
+                        IdElementoNavigation = elemento,
+                        IdMonstroNavigation = monstroElegido,
+                        Eficacia = w.eficacia
+                    });
+                }
 
                 monstroElegido.Items.Clear();
-                data.items.ForEach(i =>
+                foreach (var i in (data.items ?? new List<DtoItem>()))
                 {
-                    monstroElegido.Items.Add(new Item()
+                    monstroElegido.Items.Add(new Item
                     {
-                        NombreItem = i.name,
-                        DescripcionItem = i.description
+                        NombreItem = i.name ?? string.Empty,
+                        DescripcionItem = i.description ?? string.Empty
+                        // El FK a Monstro se fija por la navegación al agregar
                     });
-                });
+                }
 
                 await MhwApi.SaveChangesAsync();
-                return Ok();
+                return Ok(monstroElegido);
             }
             catch (Exception ex)
             {
-                // Captura la excepción y devuélvela al cliente
                 return StatusCode(500, $"Error interno: {ex.Message}");
             }
         }
 
+    
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<MonstroGrande>> EliminarMonstro (int id)
+        public async Task<ActionResult<MonstroGrande>> EliminarMonstro(int id)
         {
             MonstroGrande monstroElegido = new MonstroGrande()
             {
@@ -323,7 +382,7 @@ namespace Proyecto_API_MHW.Controllers
             };
             MhwApi.MonstroGrandes.Remove(monstroElegido);
             await MhwApi.SaveChangesAsync();
-            return Ok( $"Monstro eliminado id: {id}");
+            return Ok($"Monstro eliminado id: {id}");
         }
 
 

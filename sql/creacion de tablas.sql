@@ -13,11 +13,23 @@ drop table if exists categoria_monstro cascade;
 drop table if exists imagen_monstro cascade;
 drop table if exists usuario cascade;
 
-create table usuario (
+/*create table usuario (
  idUsuario serial unique,
  nombreUsuario varchar(50),
  password varchar(50),
  primary key (idUsuario)
+);*/
+
+CREATE TABLE usuario (
+    idUsuario SERIAL UNIQUE,
+    nombreUsuario VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(50) NOT NULL,
+    correo VARCHAR(100) UNIQUE NOT NULL,
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    PRIMARY KEY (idUsuario),
+    CONSTRAINT check_password_length CHECK (LENGTH(password) >= 8),
+    CONSTRAINT check_email_format CHECK (correo ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
 
 create TABLE categoria_monstro (
